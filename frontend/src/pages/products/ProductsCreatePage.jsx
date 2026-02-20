@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   createProduct, 
+  generateSKU,
   getActiveMainCategories, 
   getActiveSubcategories,
   getSuppliers, 
@@ -50,9 +51,13 @@ export default function ProductsCreatePage() {
   const [error, setError] = useState("");
   const [activeStep, setActiveStep] = useState(1);
 
-  // Load main categories, suppliers, warehouses on mount
+  // Load main categories, suppliers, warehouses, and generate SKU on mount
   useEffect(() => {
     Promise.all([
+      generateSKU().catch(err => {
+        console.error("Failed to generate SKU:", err);
+        return { data: { sku: "SKU" + new Date().getTime() } };
+      }),
       getActiveMainCategories().catch(err => {
         console.error("Failed to load main categories:", err);
         return { data: [] };
@@ -65,8 +70,10 @@ export default function ProductsCreatePage() {
         console.error("Failed to load warehouses:", err);
         return { data: [] };
       })
-    ]).then(([m, s, w]) => {
+    ]).then(([skuRes, m, s, w]) => {
+      console.log("SKU generated:", skuRes.data.sku);
       console.log("Main categories loaded:", m.data);
+      setForm((prev) => ({ ...prev, sku: skuRes.data.sku }));
       setMainCategories(m.data.results ?? m.data);
       setSuppliers(s.data.results ?? s.data);
       setWarehouses(w.data.results ?? w.data);
@@ -225,7 +232,16 @@ export default function ProductsCreatePage() {
           <div className="wizard-grid">
             <label className="wizard-field">
               Product No. *
-              <input name="sku" value={form.sku} onChange={handleChange} required />
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input 
+                  name="sku" 
+                  value={form.sku} 
+                  readOnly 
+                  style={{ background: "#f3f4f6", cursor: "not-allowed" }}
+                  title="Auto-generated product number"
+                />
+                <span style={{ fontSize: "11px", color: "#6b7280", whiteSpace: "nowrap" }}>Auto-generated</span>
+              </div>
             </label>
             <label className="wizard-field">
               Product Name *

@@ -39,7 +39,7 @@ class Warehouse(TimeStampedModel):
 
 
 class Product(TimeStampedModel):
-    sku = models.CharField(max_length=50, unique=True)
+    sku = models.CharField(max_length=50, unique=True, blank=True)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name="products")
@@ -53,6 +53,15 @@ class Product(TimeStampedModel):
     @property
     def is_low_stock(self):
         return self.stock_quantity <= self.low_stock_threshold
+
+    def save(self, *args, **kwargs):
+        # Generate SKU automatically if not provided
+        if not self.sku:
+            from django.utils import timezone
+            last_product = Product.objects.order_by("-id").first()
+            n = (last_product.id if last_product else 0) + 1
+            self.sku = f"SKU{timezone.now().strftime('%Y%m')}{n:05d}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.sku} - {self.name}"

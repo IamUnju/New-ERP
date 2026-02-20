@@ -131,6 +131,15 @@ class ProductViewSet(AuditLogMixin, viewsets.ModelViewSet):
     ordering_fields = ["sku", "name", "created_at", "stock_quantity"]
 
     @action(detail=False, methods=["get"], permission_classes=[ScreenPermissionRequired])
+    def generate_sku(self, request):
+        """Generate the next available SKU"""
+        from django.utils import timezone
+        last_product = Product.objects.order_by("-id").first()
+        n = (last_product.id if last_product else 0) + 1
+        sku = f"SKU{timezone.now().strftime('%Y%m')}{n:05d}"
+        return Response({"sku": sku})
+
+    @action(detail=False, methods=["get"], permission_classes=[ScreenPermissionRequired])
     def low_stock(self, request):
         products = self.get_queryset().filter(stock_quantity__lte=F("low_stock_threshold"))
         page = self.paginate_queryset(products)

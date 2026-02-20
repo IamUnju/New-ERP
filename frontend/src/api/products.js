@@ -2,6 +2,7 @@ import api from "./axios.js";
 
 // ── Products ──────────────────────────────────────────────────────────────────
 export const getProducts = (params) => api.get("/api/v1/products/", { params });
+export const generateSKU = () => api.get("/api/v1/products/generate_sku/");
 export const createProduct = (data) => api.post("/api/v1/products/", data);
 export const updateProduct = (id, data) => api.patch(`/api/v1/products/${id}/`, data);
 export const deleteProduct = (id) => api.delete(`/api/v1/products/${id}/`);
