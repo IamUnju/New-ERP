@@ -26,6 +26,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
 
+    def validate_email(self, value):
+        if value == "":
+            return None
+        return value
+
 
 class SalaryPaymentSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()

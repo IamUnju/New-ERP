@@ -8,6 +8,8 @@ export const deleteProduct = (id) => api.delete(`/api/v1/products/${id}/`);
 
 // ── Support entities (for dropdowns) ─────────────────────────────────────────
 export const getCategories = () => api.get("/api/v1/categories/");
+export const getMainCategories = () => api.get("/api/v1/main-categories/");
+export const getSubcategories = () => api.get("/api/v1/subcategories/");
 export const getSuppliers = () => api.get("/api/v1/suppliers/");
 export const getWarehouses = () => api.get("/api/v1/warehouses/");
 export const createWarehouse = (data) => api.post("/api/v1/warehouses/", data);

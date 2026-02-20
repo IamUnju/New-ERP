@@ -19,23 +19,35 @@ class AuditLogMixin:
 
     def log_action(self, action, instance=None, changes=None):
         user = getattr(self.request, "user", None)
-        AuditLog.objects.create(
-            actor=user if getattr(user, "is_authenticated", False) else None,
-            action=action,
-            model=self._audit_model_label(instance),
-            object_id=str(getattr(instance, "id", "")) if instance else "",
-            object_repr=str(instance) if instance else "",
-            changes=changes or {},
-            ip_address=self._audit_ip(),
-        )
+        try:
+            AuditLog.objects.create(
+                actor=user if getattr(user, "is_authenticated", False) else None,
+                action=action,
+                model=self._audit_model_label(instance),
+                object_id=str(getattr(instance, "id", "")) if instance else "",
+                object_repr=str(instance) if instance else "",
+                changes=changes or {},
+                ip_address=self._audit_ip(),
+            )
+        except Exception:
+            # Never block the main request if audit logging fails.
+            return
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
-        self.log_action(AuditLog.Action.CREATE, instance=serializer.instance, changes=serializer.validated_data)
+        self.log_action(
+            AuditLog.Action.CREATE,
+            instance=serializer.instance,
+            changes=serializer.data,
+        )
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
-        self.log_action(AuditLog.Action.UPDATE, instance=serializer.instance, changes=serializer.validated_data)
+        self.log_action(
+            AuditLog.Action.UPDATE,
+            instance=serializer.instance,
+            changes=serializer.data,
+        )
 
     def perform_destroy(self, instance):
         self.log_action(AuditLog.Action.DELETE, instance=instance)

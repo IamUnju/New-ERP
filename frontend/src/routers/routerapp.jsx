@@ -10,6 +10,7 @@ import Homepage from "../pages/home"
 import Dashboard from "../pages/DashboadPage"
 import RegisterForm from "../pages/register"
 import ProductsPage from "../pages/products/ProductsPage"
+import ProductsCreatePage from "../pages/products/ProductsCreatePage"
 import UsersPage from "../pages/users/UsersPage"
 import SalesPage from "../pages/sales/SalesPage"
 import CustomersPage from "../pages/customers/CustomersPage"
@@ -44,6 +45,11 @@ function AppRouter() {
             <Route path="/products" element={
               <RoleBasedProtectedRoute allowedrole={["admin", "manager", "storekeeper"]}>
                 <ProductsPage />
+              </RoleBasedProtectedRoute>
+            } />
+            <Route path="/products/new" element={
+              <RoleBasedProtectedRoute allowedrole={["admin", "manager", "storekeeper"]}>
+                <ProductsCreatePage />
               </RoleBasedProtectedRoute>
             } />
             <Route path="/users" element={

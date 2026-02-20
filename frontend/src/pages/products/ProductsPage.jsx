@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createProduct,
   deleteProduct,
@@ -49,6 +50,7 @@ const COLUMNS = [
 ];
 
 export default function ProductsPage() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -89,14 +91,6 @@ export default function ProductsPage() {
       setWarehouses(w.data.results ?? w.data);
     });
   }, []);
-
-  /* ── Open create modal ──────────────────────────────────────────────────── */
-  const openCreate = () => {
-    setEditing(null);
-    setForm(EMPTY);
-    setError("");
-    setShowModal(true);
-  };
 
   /* ── Open edit modal ────────────────────────────────────────────────────── */
   const openEdit = (product) => {
@@ -170,7 +164,7 @@ export default function ProductsPage() {
       {/* ── Page header ── */}
       <div className="page-header">
         <h1>Products</h1>
-        <button className="btn primary" onClick={openCreate}>
+        <button className="btn primary" onClick={() => navigate("/products/new")}>
           + New Product
         </button>
       </div>
@@ -227,7 +221,7 @@ export default function ProductsPage() {
                   <option value="">— None —</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name}
+                      {c.full_name || c.name}
                     </option>
                   ))}
                 </select>

@@ -1,0 +1,365 @@
+/* ========================================
+   SIDEBAR NAVIGATION WITH HOVER DROPDOWNS
+   ======================================== */
+
+/* Main Sidebar Container */
+.erp-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 240px;
+  background: linear-gradient(180deg, #2b3143 0%, #1f2937 100%);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: width 0.3s ease;
+}
+
+.erp-sidebar.collapsed {
+  width: 70px;
+}
+
+/* Logo Section */
+.sidebar-logo {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 70px;
+}
+
+.sidebar-logo-icon {
+  width: 40px;
+  height: 40px;
+  background: #18b34a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.erp-sidebar.collapsed .sidebar-logo-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Navigation Menu */
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Menu Item Container */
+.sidebar-nav-item {
+  position: relative;
+  margin: 4px 12px;
+}
+
+/* Menu Link */
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #cbd5e1;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.sidebar-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.sidebar-nav-link.active {
+  background: #18b34a;
+  color: white;
+  box-shadow: 0 4px 12px rgba(24, 179, 74, 0.3);
+}
+
+.sidebar-nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-nav-text {
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+.erp-sidebar.collapsed .sidebar-nav-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Hover Dropdown Panel */
+.sidebar-dropdown-panel {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: 12px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  min-width: 720px;
+  z-index: 2000;
+  opacity: 0;
+  transform: translateY(-5px) scale(0.98);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.sidebar-nav-item:hover .sidebar-dropdown-panel,
+.sidebar-dropdown-panel:hover {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+  transition-delay: 0s;
+}
+
+/* Dropdown Tabs */
+.dropdown-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0 20px;
+}
+
+.dropdown-tab {
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.dropdown-tab:hover {
+  color: #374151;
+  background: #f3f4f6;
+}
+
+.dropdown-tab.active {
+  color: #111827;
+  font-weight: 600;
+  border-bottom-color: #18b34a;
+  background: white;
+}
+
+/* Dropdown Grid Layout - 3 columns */
+.dropdown-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 16px;
+  padding: 20px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+/* Single column for smaller dropdowns */
+.dropdown-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.dropdown-grid.two-columns {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Custom scrollbar for mega menu */
+.dropdown-grid::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dropdown-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-grid::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.dropdown-grid::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Dropdown Section - removed section styling since items are just in columns */
+.dropdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.dropdown-section-title {
+  display: none; /* Hide section titles based on the image */
+}
+
+/* Dropdown Items */
+.dropdown-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-item-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #111827;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.dropdown-item-link:hover {
+  background: #f0fdf4;
+  color: #18b34a;
+}
+
+.dropdown-item-link.active {
+  background: #ecfdf5;
+  color: #18b34a;
+}
+
+.dropdown-item-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #18b34a; /* Icons are green like in the image */
+  flex-shrink: 0;
+}
+
+.dropdown-item-link:hover .dropdown-item-icon {
+  color: #18b34a;
+}
+
+/* Footer Section */
+.sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+}
+
+.sidebar-footer-powered {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.sidebar-footer-icon {
+  color: #18b34a;
+}
+
+.sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: #f87171;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.erp-sidebar.collapsed .sidebar-footer-powered,
+.erp-sidebar.collapsed .sidebar-logout-btn span {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .erp-sidebar {
+    width: 70px;
+  }
+  
+  .sidebar-dropdown-panel {
+    display: none;
+  }
+}
+
+/* Animation keyframes */
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

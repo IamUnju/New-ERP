@@ -3,9 +3,30 @@ from apps.products.models import Category, Supplier, Warehouse, Product, StockMo
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    parent_name = serializers.CharField(source="parent.name", read_only=True)
+    full_name = serializers.SerializerMethodField()
+    is_main = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
-        fields = ["id", "name", "description", "created_at"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "parent",
+            "parent_name",
+            "full_name",
+            "is_main",
+            "created_at",
+        ]
+
+    def get_full_name(self, obj):
+        if obj.parent:
+            return f"{obj.parent.name} / {obj.name}"
+        return obj.name
+
+    def get_is_main(self, obj):
+        return obj.parent_id is None
 
 
 class SupplierSerializer(serializers.ModelSerializer):

@@ -20,7 +20,7 @@ class Employee(TimeStampedModel):
     emp_number  = models.CharField(max_length=20, unique=True, blank=True)
     first_name  = models.CharField(max_length=100)
     last_name   = models.CharField(max_length=100)
-    email       = models.EmailField(unique=True, blank=True)
+    email       = models.EmailField(unique=True, blank=True, null=True)
     phone       = models.CharField(max_length=30, blank=True)
     department  = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     position    = models.CharField(max_length=100, blank=True)

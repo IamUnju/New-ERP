@@ -2,6 +2,7 @@ from django.db.models import F
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from apps.products.models import Category, Supplier, Warehouse, Product, StockMovement
 from apps.products.serializers import (
@@ -21,6 +22,39 @@ class CategoryViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [ScreenPermissionRequired]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
+    filterset_fields = ["parent"]
+
+
+class MainCategoryViewSet(CategoryViewSet):
+    def get_queryset(self):
+        return super().get_queryset().filter(parent__isnull=True)
+
+    def perform_create(self, serializer):
+        serializer.save(parent=None)
+
+    def perform_update(self, serializer):
+        serializer.save(parent=None)
+
+
+class SubCategoryViewSet(CategoryViewSet):
+    def get_queryset(self):
+        return super().get_queryset().filter(parent__isnull=False)
+
+    def perform_create(self, serializer):
+        parent = serializer.validated_data.get("parent")
+        if parent is None:
+            raise ValidationError({"parent": "Subcategory requires a main category."})
+        if parent.parent_id is not None:
+            raise ValidationError({"parent": "Main category cannot be a subcategory."})
+        serializer.save()
+
+    def perform_update(self, serializer):
+        parent = serializer.validated_data.get("parent", serializer.instance.parent)
+        if parent is None:
+            raise ValidationError({"parent": "Subcategory requires a main category."})
+        if parent.parent_id is not None:
+            raise ValidationError({"parent": "Main category cannot be a subcategory."})
+        serializer.save()
 
 
 class SupplierViewSet(AuditLogMixin, viewsets.ModelViewSet):

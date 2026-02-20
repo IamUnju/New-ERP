@@ -25,6 +25,27 @@ const MASTER_CONFIG = [
     ],
   },
   {
+    key: "main-categories",
+    label: "Main Category Master",
+    endpoint: "/api/v1/main-categories/",
+    openPath: "/products",
+    fields: [
+      { key: "name", label: "Name" },
+      { key: "description", label: "Description" },
+    ],
+  },
+  {
+    key: "subcategories",
+    label: "Subcategory Master",
+    endpoint: "/api/v1/subcategories/",
+    openPath: "/products",
+    fields: [
+      { key: "name", label: "Name" },
+      { key: "description", label: "Description" },
+      { key: "parent", label: "Main Category ID", type: "number" },
+    ],
+  },
+  {
     key: "warehouses",
     label: "Warehouse Master",
     endpoint: "/api/v1/warehouses/",
@@ -79,7 +100,17 @@ const MASTER_CONFIG = [
       { key: "department", label: "Department ID", type: "number" },
       { key: "position", label: "Position" },
       { key: "basic_salary", label: "Basic Salary", type: "number" },
-      { key: "status", label: "Status" },
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        defaultValue: "active",
+        options: [
+          { label: "Active", value: "active" },
+          { label: "Inactive", value: "inactive" },
+          { label: "Terminated", value: "terminated" },
+        ],
+      },
     ],
   },
   {
@@ -196,7 +227,13 @@ export default function MastersPage() {
 
   // Open create form
   const openCreate = () => {
-    setFormData({});
+    const defaults = {};
+    if (selectedMaster) {
+      selectedMaster.fields.forEach((f) => {
+        if (f.defaultValue !== undefined) defaults[f.key] = f.defaultValue;
+      });
+    }
+    setFormData(defaults);
     setIsEditing(false);
     setShowForm(true);
   };
@@ -211,24 +248,30 @@ export default function MastersPage() {
   // Save record (Create or Update)
   const handleSave = async () => {
     if (!selectedMaster) return;
+    const payload = {};
+    selectedMaster.fields.forEach((f) => {
+      if (formData[f.key] !== undefined) {
+        payload[f.key] = normalizeValue(formData[f.key], f.type);
+      }
+    });
     try {
       if (isEditing) {
         // Update
-        await api.patch(`${selectedMaster.endpoint}${formData.id}/`, formData);
+        await api.patch(`${selectedMaster.endpoint}${formData.id}/`, payload);
         api.post("/api/v1/audit-logs/log/", {
           action: "update",
           model: selectedMaster.label,
           object_repr: formData.id,
-          changes: formData,
+          changes: payload,
         }).catch(() => {});
       } else {
         // Create
-        await api.post(selectedMaster.endpoint, formData);
+        await api.post(selectedMaster.endpoint, payload);
         api.post("/api/v1/audit-logs/log/", {
           action: "create",
           model: selectedMaster.label,
           object_repr: formData.name || formData.id || "New",
-          changes: formData,
+          changes: payload,
         }).catch(() => {});
       }
       // Reload records
@@ -457,6 +500,18 @@ export default function MastersPage() {
                     >
                       <option value="false">No</option>
                       <option value="true">Yes</option>
+                    </select>
+                  ) : field.type === "select" && Array.isArray(field.options) ? (
+                    <select
+                      value={formData[field.key] ?? ""}
+                      onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                    >
+                      <option value="">Select...</option>
+                      {field.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   ) : field.type === "number" ? (
                     <input

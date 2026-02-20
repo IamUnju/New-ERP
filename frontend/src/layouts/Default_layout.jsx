@@ -6,7 +6,7 @@ import Sidebar from "../component/designComponents/sideBarComponent";
 import "../style/layout.css";
 
 function DefaultLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
@@ -14,14 +14,15 @@ function DefaultLayout() {
 
   return (
     <div className="app">
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-      <div className="main">
-        <Header onMenuClick={toggleSidebar} />
-        <div className="content">
-          <Outlet />
+      <Header onMenuClick={toggleSidebar} />
+      <div className="app-body">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="main">
+          <div className="content">
+            <Outlet />
+          </div>
+          <Footer />
         </div>
-        <Footer />
       </div>
     </div>
   );

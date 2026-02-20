@@ -6,6 +6,13 @@ from apps.core.models import TimeStampedModel
 class Category(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
     description = models.CharField(max_length=255, blank=True)
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="subcategories",
+    )
 
     def __str__(self):
         return self.name
