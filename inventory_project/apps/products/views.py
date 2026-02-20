@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.products.models import Category, Supplier, Warehouse, Product, StockMovement
 from apps.products.serializers import (
@@ -22,12 +23,31 @@ class CategoryViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [ScreenPermissionRequired]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
-    filterset_fields = ["parent"]
+    filterset_fields = ["parent", "is_active"]
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def active_only(self, request):
+        """Return only active categories"""
+        categories = self.get_queryset().filter(is_active=True)
+        page = self.paginate_queryset(categories)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)
 
 
 class MainCategoryViewSet(CategoryViewSet):
+    """ViewSet for main/parent categories only"""
     def get_queryset(self):
         return super().get_queryset().filter(parent__isnull=True)
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def active_only(self, request):
+        """Return only active main categories"""
+        categories = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(parent=None)
@@ -37,8 +57,21 @@ class MainCategoryViewSet(CategoryViewSet):
 
 
 class SubCategoryViewSet(CategoryViewSet):
+    """ViewSet for subcategories only"""
     def get_queryset(self):
-        return super().get_queryset().filter(parent__isnull=False)
+        qs = super().get_queryset().filter(parent__isnull=False)
+        # Allow filtering by parent ID
+        parent_id = self.request.query_params.get('parent')
+        if parent_id:
+            qs = qs.filter(parent_id=parent_id)
+        return qs
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def active_only(self, request):
+        """Return active subcategories, optionally filtered by parent"""
+        categories = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         parent = serializer.validated_data.get("parent")
@@ -63,6 +96,14 @@ class SupplierViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [ScreenPermissionRequired]
     search_fields = ["name", "contact_email"]
     ordering_fields = ["name", "created_at"]
+    filterset_fields = ["is_active"]
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def active_only(self, request):
+        """Return only active suppliers"""
+        suppliers = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(suppliers, many=True)
+        return Response(serializer.data)
 
 
 class WarehouseViewSet(AuditLogMixin, viewsets.ModelViewSet):
@@ -71,6 +112,14 @@ class WarehouseViewSet(AuditLogMixin, viewsets.ModelViewSet):
     permission_classes = [ScreenPermissionRequired]
     search_fields = ["name", "location"]
     ordering_fields = ["name", "created_at"]
+    filterset_fields = ["is_active"]
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def active_only(self, request):
+        """Return only active warehouses"""
+        warehouses = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(warehouses, many=True)
+        return Response(serializer.data)
 
 
 class ProductViewSet(AuditLogMixin, viewsets.ModelViewSet):

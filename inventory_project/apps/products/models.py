@@ -13,6 +13,7 @@ class Category(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="subcategories",
     )
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -22,6 +23,7 @@ class Supplier(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
     contact_email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -30,6 +32,7 @@ class Supplier(TimeStampedModel):
 class Warehouse(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
     location = models.CharField(max_length=255, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

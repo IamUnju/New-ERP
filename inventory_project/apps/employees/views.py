@@ -1,5 +1,7 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Department, Employee, SalaryPayment
 from .serializers import DepartmentSerializer, EmployeeSerializer, SalaryPaymentSerializer
@@ -10,8 +12,16 @@ class DepartmentViewSet(AuditLogMixin, viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter]
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ["name"]
+    filterset_fields = ["is_active"]
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def active_only(self, request):
+        """Return only active departments"""
+        departments = self.get_queryset().filter(is_active=True)
+        serializer = self.get_serializer(departments, many=True)
+        return Response(serializer.data)
 
 
 class EmployeeViewSet(AuditLogMixin, viewsets.ModelViewSet):

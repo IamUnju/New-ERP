@@ -5,6 +5,8 @@ from .models import StockMovement, StockLevel
 class StockMovementSerializer(serializers.ModelSerializer):
     product_name   = serializers.CharField(source="product.name", read_only=True)
     warehouse_name = serializers.CharField(source="warehouse.name", read_only=True)
+    dest_warehouse_name = serializers.CharField(source="dest_warehouse.name", read_only=True)
+    created_by_email = serializers.CharField(source="created_by.email", read_only=True)
 
     class Meta:
         model = StockMovement

@@ -15,6 +15,8 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class CustomerTransactionSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source="customer.name", read_only=True)
+
     class Meta:
         model = CustomerTransaction
         fields = "__all__"

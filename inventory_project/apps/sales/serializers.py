@@ -13,6 +13,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     items_input = serializers.ListField(child=serializers.DictField(), write_only=True, required=False)
+    created_by_email = serializers.CharField(source="created_by.email", read_only=True)
 
     class Meta:
         model = Order
@@ -24,5 +25,6 @@ class OrderSerializer(serializers.ModelSerializer):
             "status",
             "items",
             "items_input",
+            "created_by_email",
             "created_at",
         ]

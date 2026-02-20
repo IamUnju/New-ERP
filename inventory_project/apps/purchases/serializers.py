@@ -43,6 +43,9 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
 
 
 class SupplierPaymentSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source="supplier.name", read_only=True)
+    order_number = serializers.CharField(source="order.order_number", read_only=True)
+
     class Meta:
         model = SupplierPayment
         fields = "__all__"

@@ -146,18 +146,23 @@
   min-width: 720px;
   z-index: 2000;
   opacity: 0;
-  transform: translateY(-5px) scale(0.98);
+  visibility: hidden;
+  transform: translateX(-10px) translateY(-8px) scale(0.95);
   pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.5s;
+  transition-delay: 0s, 0s, 0s;
   overflow: hidden;
 }
 
 .sidebar-nav-item:hover .sidebar-dropdown-panel,
 .sidebar-dropdown-panel:hover {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  visibility: visible;
+  transform: translateX(0) translateY(0) scale(1);
   pointer-events: all;
-  transition-delay: 0s;
+  transition-delay: 0.2s, 0.2s, 0s;
 }
 
 /* Dropdown Tabs */
@@ -251,6 +256,59 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.dropdown-items li {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.sidebar-nav-item:hover .dropdown-items li,
+.sidebar-dropdown-panel:hover .dropdown-items li {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Staggered animation for dropdown items */
+.sidebar-nav-item:hover .dropdown-items li:nth-child(1),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(1) {
+  transition-delay: 0.1s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(2),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(2) {
+  transition-delay: 0.15s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(3),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(3) {
+  transition-delay: 0.2s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(4),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(4) {
+  transition-delay: 0.25s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(5),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(5) {
+  transition-delay: 0.3s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(6),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(6) {
+  transition-delay: 0.35s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(7),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(7) {
+  transition-delay: 0.4s;
+}
+
+.sidebar-nav-item:hover .dropdown-items li:nth-child(8),
+.sidebar-dropdown-panel:hover .dropdown-items li:nth-child(8) {
+  transition-delay: 0.45s;
 }
 
 .dropdown-item-link {

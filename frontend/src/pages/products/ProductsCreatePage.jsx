@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createProduct, getCategories, getSuppliers, getWarehouses } from "../../api/products.js";
+import { 
+  createProduct, 
+  getActiveMainCategories, 
+  getActiveSubcategories,
+  getSuppliers, 
+  getWarehouses 
+} from "../../api/products.js";
 import FormWizardLayout from "../../components/common/FormWizardLayout.jsx";
 
 const EMPTY = {
   sku: "",
   name: "",
   description: "",
+  main_category: "",
   category: "",
   supplier: "",
   warehouse: "",
@@ -35,24 +42,68 @@ export default function ProductsCreatePage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY);
   const [meta, setMeta] = useState(META_EMPTY);
-  const [categories, setCategories] = useState([]);
+  const [mainCategories, setMainCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [activeStep, setActiveStep] = useState(1);
 
+  // Load main categories, suppliers, warehouses on mount
   useEffect(() => {
-    Promise.all([getCategories(), getSuppliers(), getWarehouses()]).then(([c, s, w]) => {
-      setCategories(c.data.results ?? c.data);
+    Promise.all([
+      getActiveMainCategories().catch(err => {
+        console.error("Failed to load main categories:", err);
+        return { data: [] };
+      }),
+      getSuppliers().catch(err => {
+        console.error("Failed to load suppliers:", err);
+        return { data: [] };
+      }),
+      getWarehouses().catch(err => {
+        console.error("Failed to load warehouses:", err);
+        return { data: [] };
+      })
+    ]).then(([m, s, w]) => {
+      console.log("Main categories loaded:", m.data);
+      setMainCategories(m.data.results ?? m.data);
       setSuppliers(s.data.results ?? s.data);
       setWarehouses(w.data.results ?? w.data);
     });
   }, []);
 
+  // Load subcategories when main category changes
+  useEffect(() => {
+    if (form.main_category) {
+      console.log("Loading subcategories for parent:", form.main_category);
+      getActiveSubcategories(form.main_category)
+        .then((res) => {
+          console.log("Subcategories loaded:", res.data);
+          setSubcategories(res.data.results ?? res.data);
+        })
+        .catch(err => {
+          console.error("Failed to load subcategories:", err);
+          setSubcategories([]);
+        });
+    } else {
+      setSubcategories([]);
+    }
+  }, [form.main_category]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    
+    // If changing main_category, reset subcategory
+    if (name === "main_category") {
+      setForm((prev) => ({ 
+        ...prev, 
+        main_category: value,
+        category: "" // Clear subcategory when main category changes
+      }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    }
   };
 
   const handleMetaChange = (e) => {
@@ -83,12 +134,69 @@ export default function ProductsCreatePage() {
     }
   };
 
+  const validateStep = (step) => {
+    setError("");
+    
+    if (step === 1) {
+      // Step 1: Required - SKU, Name, Main Category, Unit
+      if (!form.sku.trim()) {
+        setError("Product No. is required");
+        return false;
+      }
+      if (!form.name.trim()) {
+        setError("Product Name is required");
+        return false;
+      }
+      if (!form.main_category) {
+        setError("Main Category is required");
+        return false;
+      }
+      if (!meta.unit.trim()) {
+        setError("Unit of Measure is required");
+        return false;
+      }
+    }
+    
+    if (step === 2) {
+      // Step 2: Required - Price
+      if (!form.price || parseFloat(form.price) <= 0) {
+        setError("Price is required and must be greater than 0");
+        return false;
+      }
+    }
+    
+    if (step === 3) {
+      // Step 3: Required - Stock Quantity
+      if (!form.stock_quantity || parseInt(form.stock_quantity, 10) < 0) {
+        setError("Stock Quantity is required and must be 0 or greater");
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   const handleNext = () => {
+    // Validate current step before proceeding
+    if (!validateStep(activeStep)) {
+      return;
+    }
+    
     if (activeStep < 3) {
       setActiveStep((prev) => prev + 1);
+      setError(""); // Clear error when moving to next step
       return;
     }
     handleSubmit();
+  };
+
+  const handleBack = () => {
+    if (activeStep > 1) {
+      setActiveStep((prev) => prev - 1);
+      setError(""); // Clear error when going back
+    } else {
+      navigate("/products");
+    }
   };
 
   const crumbs = [
@@ -103,7 +211,7 @@ export default function ProductsCreatePage() {
       crumbs={crumbs}
       steps={STEPS}
       activeStep={activeStep}
-      onBack={() => navigate("/products")}
+      onBack={handleBack}
       primaryAction={{
         label: activeStep < 3 ? "Next" : saving ? "Saving..." : "Save",
         onClick: handleNext,
@@ -136,12 +244,28 @@ export default function ProductsCreatePage() {
               </div>
             </label>
             <label className="wizard-field">
-              Category *
-              <select name="category" value={form.category} onChange={handleChange}>
-                <option value="">Select or add category</option>
-                {categories.map((c) => (
+              Main Category *
+              <select name="main_category" value={form.main_category} onChange={handleChange} required>
+                <option value="">Select main category</option>
+                {mainCategories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.full_name || c.name}
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="wizard-field">
+              Subcategory
+              <select 
+                name="category" 
+                value={form.category} 
+                onChange={handleChange}
+                disabled={!form.main_category}
+              >
+                <option value="">Select subcategory</option>
+                {subcategories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
               </select>

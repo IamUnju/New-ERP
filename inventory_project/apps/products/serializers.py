@@ -17,6 +17,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "parent_name",
             "full_name",
             "is_main",
+            "is_active",
             "created_at",
         ]
 
@@ -32,13 +33,13 @@ class CategorySerializer(serializers.ModelSerializer):
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = ["id", "name", "contact_email", "phone", "created_at"]
+        fields = ["id", "name", "contact_email", "phone", "is_active", "created_at"]
 
 
 class WarehouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Warehouse
-        fields = ["id", "name", "location", "created_at"]
+        fields = ["id", "name", "location", "is_active", "created_at"]
 
 
 class ProductSerializer(serializers.ModelSerializer):

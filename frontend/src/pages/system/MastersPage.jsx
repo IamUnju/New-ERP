@@ -42,7 +42,14 @@ const MASTER_CONFIG = [
     fields: [
       { key: "name", label: "Name" },
       { key: "description", label: "Description" },
-      { key: "parent", label: "Main Category ID", type: "number" },
+      { 
+        key: "parent", 
+        label: "Main Category", 
+        type: "relation",
+        endpoint: "/api/v1/main-categories/active/",
+        displayField: "name",
+        valueField: "id"
+      },
     ],
   },
   {
@@ -78,9 +85,30 @@ const MASTER_CONFIG = [
       { key: "sku", label: "SKU" },
       { key: "name", label: "Name" },
       { key: "description", label: "Description" },
-      { key: "category", label: "Category ID", type: "number" },
-      { key: "supplier", label: "Supplier ID", type: "number" },
-      { key: "warehouse", label: "Warehouse ID", type: "number" },
+      { 
+        key: "category", 
+        label: "Category", 
+        type: "relation",
+        endpoint: "/api/v1/categories/active/",
+        displayField: "name",
+        valueField: "id"
+      },
+      { 
+        key: "supplier", 
+        label: "Supplier", 
+        type: "relation",
+        endpoint: "/api/v1/suppliers/active/",
+        displayField: "name",
+        valueField: "id"
+      },
+      { 
+        key: "warehouse", 
+        label: "Warehouse", 
+        type: "relation",
+        endpoint: "/api/v1/warehouses/active/",
+        displayField: "name",
+        valueField: "id"
+      },
       { key: "price", label: "Price", type: "number" },
       { key: "stock_quantity", label: "Stock Qty", type: "number" },
       { key: "low_stock_threshold", label: "Low Stock", type: "number" },
@@ -97,7 +125,14 @@ const MASTER_CONFIG = [
       { key: "last_name", label: "Last Name" },
       { key: "email", label: "Email" },
       { key: "phone", label: "Phone" },
-      { key: "department", label: "Department ID", type: "number" },
+      { 
+        key: "department", 
+        label: "Department", 
+        type: "relation",
+        endpoint: "/api/v1/departments/active/",
+        displayField: "name",
+        valueField: "id"
+      },
       { key: "position", label: "Position" },
       { key: "basic_salary", label: "Basic Salary", type: "number" },
       {
@@ -200,6 +235,7 @@ export default function MastersPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [deleteId, setDeleteId] = useState(null);
+  const [relationOptions, setRelationOptions] = useState({});
 
   useEffect(() => {
     api.get("/api/v1/audit-logs/")
@@ -207,6 +243,30 @@ export default function MastersPage() {
       .catch(() => setAuditLogs([]))
       .finally(() => setLoadingAudit(false));
   }, []);
+
+  // Load relation options when form is shown
+  useEffect(() => {
+    if (!showForm || !selectedMaster) return;
+    
+    const relationFields = selectedMaster.fields.filter(f => f.type === "relation" && f.endpoint);
+    if (relationFields.length === 0) return;
+
+    const loadOptions = async () => {
+      const options = {};
+      for (const field of relationFields) {
+        try {
+          const res = await api.get(field.endpoint);
+          options[field.key] = res.data.results ?? res.data;
+        } catch (error) {
+          console.error(`Failed to load options for ${field.key}:`, error);
+          options[field.key] = [];
+        }
+      }
+      setRelationOptions(options);
+    };
+
+    loadOptions();
+  }, [showForm, selectedMaster]);
 
   // Load records when master is selected
   useEffect(() => {
@@ -429,11 +489,18 @@ export default function MastersPage() {
                   <tbody>
                     {records.map((record) => (
                       <tr key={record.id}>
-                        {selectedMaster.fields.map((f) => (
-                          <td key={f.key}>
-                            {f.type === "bool" ? (record[f.key] ? "✓" : "✗") : String(record[f.key] || "—").substring(0, 50)}
-                          </td>
-                        ))}
+                        {selectedMaster.fields.map((f) => {
+                          let displayValue = record[f.key];
+                          // For relation fields, try to show the name field if available
+                          if (f.type === "relation" && record[`${f.key}_name`]) {
+                            displayValue = record[`${f.key}_name`];
+                          }
+                          return (
+                            <td key={f.key}>
+                              {f.type === "bool" ? (record[f.key] ? "✓" : "✗") : String(displayValue || "—").substring(0, 50)}
+                            </td>
+                          );
+                        })}
                         <td style={{ whiteSpace: "nowrap" }}>
                           <button className="btn" style={{ fontSize: 11, padding: "4px 8px" }} onClick={() => openEdit(record)}>Edit</button>
                           <button className="btn" style={{ fontSize: 11, padding: "4px 8px", marginLeft: 4, color: "#ef4444" }} onClick={() => setDeleteId(record.id)}>Delete</button>
@@ -500,6 +567,18 @@ export default function MastersPage() {
                     >
                       <option value="false">No</option>
                       <option value="true">Yes</option>
+                    </select>
+                  ) : field.type === "relation" ? (
+                    <select
+                      value={formData[field.key] ?? ""}
+                      onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                    >
+                      <option value="">Select {field.label}...</option>
+                      {(relationOptions[field.key] || []).map((item) => (
+                        <option key={item[field.valueField || "id"]} value={item[field.valueField || "id"]}>
+                          {item[field.displayField || "name"]}
+                        </option>
+                      ))}
                     </select>
                   ) : field.type === "select" && Array.isArray(field.options) ? (
                     <select
