@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Plus, Edit2, Trash2, ChevronRight } from "lucide-react";
 import api from "../../api/axios.js";
 import Modal from "../../components/common/Modal.jsx";
-import "../system/style.css";
 
 export default function CategoryManagementPage() {
   const navigate = useNavigate();
