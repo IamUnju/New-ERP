@@ -9,7 +9,7 @@ import {
   Calendar, AlertTriangle, RefreshCw, CheckCircle2, RotateCcw,
   FileText, FilePlus, Send, Undo2, FileCheck, Receipt, ClipboardList,
   DollarSign, TrendingDown, CreditCard, BadgeDollarSign, Repeat,
-  Link2, UserCheck, UserPlus, MapPin, FileInput,
+  Link2, UserCheck, UserPlus, MapPin, FileInput, Plus, Gift,
 } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "../../context/Context";
@@ -71,13 +71,35 @@ const dropdownMenus = {
     tabs: ['Retail', 'Promotion', 'Settings'],
     activeTab: 'Retail',
     columns: [
+      // Retail Tab - Column 1: Orders & Returns
       [
-        { icon: <ShoppingBag size={18} />, label: 'Store Orders', path: '/retail/orders' },
-        { icon: <RotateCcw size={18} />, label: 'Store Returns', path: '/retail/returns' },
+        { icon: <ShoppingBag size={18} />, label: 'Store Orders', path: '/retail/store-orders' },
+        { icon: <RotateCcw size={18} />, label: 'Store Returns', path: '/retail/store-returns' },
       ],
+      // Retail Tab - Column 2: Payments
       [
-        { icon: <Users size={18} />, label: 'Store Customers', path: '/retail/customers' },
+        { icon: <DollarSign size={18} />, label: 'Payments', path: '/retail/payments', highlight: true },
+        { icon: <RefreshCw size={18} />, label: 'Adjust Payments', path: '/retail/adjust-payments' },
+      ],
+      // Promotion Tab - Column 1
+      [
+        { icon: <Package size={18} />, label: 'Bundles', path: '/retail/bundles' },
+        { icon: <Plus size={18} />, label: 'Add-ons', path: '/retail/addons' },
+      ],
+      // Promotion Tab - Column 2
+      [
+        { icon: <Gift size={18} />, label: 'Free Gift', path: '/retail/free-gift' },
+        { icon: <TrendingDown size={18} />, label: 'Price Drop', path: '/retail/price-drop' },
+      ],
+      // Settings Tab - Column 1
+      [
         { icon: <Building2 size={18} />, label: 'Stores', path: '/retail/stores' },
+        { icon: <Package size={18} />, label: 'Store Products', path: '/retail/store-products' },
+      ],
+      // Settings Tab - Column 2
+      [
+        { icon: <TrendingUp size={18} />, label: 'Change Price', path: '/retail/change-price' },
+        { icon: <Users size={18} />, label: 'Store Customers', path: '/retail/store-customers' },
       ],
     ],
   },
@@ -231,6 +253,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     setHoverTimeout(timeout);
   };
 
+  const [activeTab, setActiveTab] = useState({});
+
   /**
    * Render dropdown panel for a menu item
    */
@@ -240,6 +264,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
     // Get the display label (capitalize first letter)
     const menuLabel = menuKey.charAt(0).toUpperCase() + menuKey.slice(1);
+    
+    // Get active tab for this menu (defaults to first tab)
+    const currentActiveTabIndex = activeTab[menuKey] ?? 0;
+    
+    // Get columns for current tab
+    // Calculate columns per tab (total columns / number of tabs)
+    const columnsPerTab = dropdownConfig.columns.length / dropdownConfig.tabs.length;
+    const startCol = currentActiveTabIndex * columnsPerTab;
+    const visibleColumns = dropdownConfig.columns.slice(startCol, startCol + columnsPerTab);
 
     return (
       <div 
@@ -252,8 +285,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           top: `${dropdownPosition.top}px`,
           left: `${dropdownPosition.left}px`,
           background: 'white',
-          minWidth: '480px',
-          maxWidth: '550px',
+          minWidth: '380px',
+          maxWidth: '420px',
           zIndex: 999999,
           pointerEvents: 'auto',
           userSelect: 'auto',
@@ -271,7 +304,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             {dropdownConfig.tabs.map((tab, index) => (
               <button
                 key={index}
-                className={`dropdown-tab ${index === 0 ? 'active' : ''}`}
+                className={`dropdown-tab ${currentActiveTabIndex === index ? 'active' : ''}`}
+                onClick={() => setActiveTab({ ...activeTab, [menuKey]: index })}
               >
                 {tab}
               </button>
@@ -280,8 +314,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         )}
         
         {/* Grid with columns */}
-        <div className={`dropdown-grid ${dropdownConfig.columns.length === 2 ? 'two-columns' : ''}`}>
-          {dropdownConfig.columns.map((column, colIndex) => (
+        <div className={`dropdown-grid ${visibleColumns.length === 2 ? 'two-columns' : ''}`}>
+          {visibleColumns.map((column, colIndex) => (
             <div key={colIndex} className="dropdown-section">
               <ul className="dropdown-items">
                 {column.map((item, itemIndex) => (
@@ -289,7 +323,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     <NavLink
                       to={item.path}
                       className={({ isActive }) =>
-                        `dropdown-item-link ${isActive ? 'active' : ''}`
+                        `dropdown-item-link ${isActive ? 'active' : ''} ${item.highlight ? 'highlight' : ''}`
                       }
                       onClick={() => {
                         // Close dropdown when clicking a link

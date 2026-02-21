@@ -23,6 +23,10 @@ import ReportsPage from "../pages/reports/ReportsPage"
 import SystemPage from "../pages/system/SystemPage"
 import MastersPage from "../pages/system/MastersPage"
 import RetailPage from "../pages/retail/RetailPage"
+import StoreOrdersPage from "../pages/retail/StoreOrdersPage"
+import StoreReturnsPage from "../pages/retail/StoreReturnsPage"
+import PaymentsPage from "../pages/retail/PaymentsPage"
+import AdjustPaymentsPage from "../pages/retail/AdjustPaymentsPage"
 
 const ALL = ["admin", "manager", "storekeeper", "sales", "accountant", "hr"]
 
@@ -71,6 +75,26 @@ function AppRouter() {
             <Route path="/retail" element={
               <RoleBasedProtectedRoute allowedrole={["admin", "manager", "sales"]}>
                 <RetailPage />
+              </RoleBasedProtectedRoute>
+            } />
+            <Route path="/retail/store-orders" element={
+              <RoleBasedProtectedRoute allowedrole={["admin", "manager", "sales"]}>
+                <StoreOrdersPage />
+              </RoleBasedProtectedRoute>
+            } />
+            <Route path="/retail/store-returns" element={
+              <RoleBasedProtectedRoute allowedrole={["admin", "manager", "sales"]}>
+                <StoreReturnsPage />
+              </RoleBasedProtectedRoute>
+            } />
+            <Route path="/retail/payments" element={
+              <RoleBasedProtectedRoute allowedrole={["admin", "manager", "sales"]}>
+                <PaymentsPage />
+              </RoleBasedProtectedRoute>
+            } />
+            <Route path="/retail/adjust-payments" element={
+              <RoleBasedProtectedRoute allowedrole={["admin", "manager", "sales"]}>
+                <AdjustPaymentsPage />
               </RoleBasedProtectedRoute>
             } />
             <Route path="/stock" element={

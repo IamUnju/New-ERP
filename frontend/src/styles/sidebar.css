@@ -334,6 +334,16 @@
   color: #18b34a;
 }
 
+.dropdown-item-link.highlight {
+  background: #18b34a;
+  color: white;
+}
+
+.dropdown-item-link.highlight:hover {
+  background: #15942a;
+  color: white;
+}
+
 .dropdown-item-icon {
   width: 18px;
   height: 18px;
@@ -342,6 +352,10 @@
   justify-content: center;
   color: #18b34a; /* Icons are green like in the image */
   flex-shrink: 0;
+}
+
+.dropdown-item-link.highlight .dropdown-item-icon {
+  color: white;
 }
 
 .dropdown-item-link:hover .dropdown-item-icon {
