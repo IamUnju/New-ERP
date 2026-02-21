@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, Package, ShoppingBag, Warehouse,
@@ -199,11 +199,45 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [isClosing, setIsClosing] = useState(false);
+  const dropdownPanelRef = useRef(null);
+  const sidebarRef = useRef(null);
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
   };
+
+  /**
+   * Handle click outside dropdown panel - close with animation
+   */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside both sidebar and dropdown panel
+      if (
+        sidebarRef.current && 
+        !sidebarRef.current.contains(event.target) &&
+        dropdownPanelRef.current &&
+        !dropdownPanelRef.current.contains(event.target)
+      ) {
+        // Start closing animation
+        setIsClosing(true);
+        // Wait for animation to complete before hiding
+        setTimeout(() => {
+          setHoveredItem(null);
+          setIsClosing(false);
+        }, 200);
+      }
+    };
+
+    // Only add listener if dropdown is visible
+    if (hoveredItem && dropdownMenus[hoveredItem]) {
+      document.addEventListener('click', handleClickOutside);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [hoveredItem]);
 
   /**
    * Handle mouse enter on menu item
@@ -286,7 +320,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
     return (
       <div 
-        className="sidebar-dropdown-panel" 
+        ref={dropdownPanelRef}
+        className={`sidebar-dropdown-panel ${isClosing ? 'closing' : 'opening'}`}
         onMouseEnter={() => cancelCloseTimeout()}
         onMouseLeave={handleDropdownMouseLeave}
         onClick={(e) => e.stopPropagation()}
@@ -359,7 +394,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   return (
     <>
-    <aside className={`sidebar ${isOpen ? "open" : "closed"}`}>
+    <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : "closed"}`}>
       <nav className="sidebar-nav" style={{ flex: 1, overflowY: isOpen ? "auto" : "visible", overflowX: "visible", position: 'relative' }}>
         <ul className="menu-items" style={{ paddingTop: isOpen ? 8 : 4, overflow: 'visible' }}>
           {navItems.map((item) => {
