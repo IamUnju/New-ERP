@@ -209,6 +209,25 @@
   overflow-y: auto;
 }
 
+/* Rows layout - displays items in 3 rows with multiple columns */
+.dropdown-grid.rows-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.dropdown-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dropdown-row .dropdown-item-link {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 140px;
+}
+
 /* Single column for smaller dropdowns */
 .dropdown-grid.single-column {
   grid-template-columns: 1fr;
@@ -270,6 +289,18 @@
   transform: translateX(0);
 }
 
+/* Dropdown row item styling */
+.dropdown-row .dropdown-item-link {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.sidebar-dropdown-panel:hover .dropdown-row .dropdown-item-link {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 /* Staggered animation for dropdown items */
 .sidebar-nav-item:hover .dropdown-items li:nth-child(1),
 .sidebar-dropdown-panel:hover .dropdown-items li:nth-child(1) {
@@ -299,6 +330,19 @@
 .sidebar-nav-item:hover .dropdown-items li:nth-child(6),
 .sidebar-dropdown-panel:hover .dropdown-items li:nth-child(6) {
   transition-delay: 0.35s;
+}
+
+/* Staggered animation for row-based items */
+.sidebar-dropdown-panel:hover .dropdown-row:nth-child(1) .dropdown-item-link {
+  transition-delay: 0.1s;
+}
+
+.sidebar-dropdown-panel:hover .dropdown-row:nth-child(2) .dropdown-item-link {
+  transition-delay: 0.15s;
+}
+
+.sidebar-dropdown-panel:hover .dropdown-row:nth-child(3) .dropdown-item-link {
+  transition-delay: 0.2s;
 }
 
 .sidebar-nav-item:hover .dropdown-items li:nth-child(7),

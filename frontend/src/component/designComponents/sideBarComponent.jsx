@@ -273,6 +273,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     const columnsPerTab = dropdownConfig.columns.length / dropdownConfig.tabs.length;
     const startCol = currentActiveTabIndex * columnsPerTab;
     const visibleColumns = dropdownConfig.columns.slice(startCol, startCol + columnsPerTab);
+    
+    // Flatten all items from visible columns into a single array
+    const allItems = visibleColumns.reduce((acc, column) => [...acc, ...column], []);
+    
+    // Organize items into 3 rows
+    const itemsPerRow = Math.ceil(allItems.length / 3);
+    const rows = [];
+    for (let i = 0; i < 3; i++) {
+      rows.push(allItems.slice(i * itemsPerRow, (i + 1) * itemsPerRow));
+    }
 
     return (
       <div 
@@ -313,36 +323,33 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </div>
         )}
         
-        {/* Grid with columns */}
-        <div className={`dropdown-grid ${visibleColumns.length === 2 ? 'two-columns' : ''}`}>
-          {visibleColumns.map((column, colIndex) => (
-            <div key={colIndex} className="dropdown-section">
-              <ul className="dropdown-items">
-                {column.map((item, itemIndex) => (
-                  <li key={itemIndex}>
-                    <NavLink
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `dropdown-item-link ${isActive ? 'active' : ''} ${item.highlight ? 'highlight' : ''}`
-                      }
-                      onClick={() => {
-                        // Close dropdown when clicking a link
-                        setHoveredItem(null);
-                      }}
-                      style={{
-                        cursor: 'pointer',
-                        pointerEvents: 'auto'
-                      }}
-                    >
-                      <span className="dropdown-item-icon">{item.icon}</span>
-                      <span>{item.label}</span>
-                      {item.badge && (
-                        <span className="dropdown-item-badge">{item.badge}</span>
-                      )}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
+        {/* Grid with rows */}
+        <div className="dropdown-grid rows-layout">
+          {rows.map((row, rowIndex) => (
+            <div key={rowIndex} className="dropdown-row">
+              {row.map((item, itemIndex) => (
+                <NavLink
+                  key={itemIndex}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `dropdown-item-link ${isActive ? 'active' : ''} ${item.highlight ? 'highlight' : ''}`
+                  }
+                  onClick={() => {
+                    // Close dropdown when clicking a link
+                    setHoveredItem(null);
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    pointerEvents: 'auto'
+                  }}
+                >
+                  <span className="dropdown-item-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="dropdown-item-badge">{item.badge}</span>
+                  )}
+                </NavLink>
+              ))}
             </div>
           ))}
         </div>
