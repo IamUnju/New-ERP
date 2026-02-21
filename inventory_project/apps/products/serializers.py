@@ -47,6 +47,7 @@ class ProductSerializer(serializers.ModelSerializer):
     supplier_name = serializers.CharField(source="supplier.name", read_only=True)
     warehouse_name = serializers.CharField(source="warehouse.name", read_only=True)
     is_low_stock = serializers.BooleanField(read_only=True)
+    image_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Product
@@ -56,6 +57,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "image",
+            "image_url",
             "category",
             "category_name",
             "supplier",
@@ -69,6 +71,15 @@ class ProductSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
         ]
+
+    def get_image_url(self, obj):
+        """Return the full URL to the image if it exists"""
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 
 class StockMovementSerializer(serializers.ModelSerializer):
