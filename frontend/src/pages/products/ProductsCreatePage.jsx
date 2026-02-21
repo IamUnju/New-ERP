@@ -14,6 +14,7 @@ const EMPTY = {
   sku: "",
   name: "",
   description: "",
+  image: null,
   main_category: "",
   category: "",
   supplier: "",
@@ -99,7 +100,13 @@ export default function ProductsCreatePage() {
   }, [form.main_category]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
+    
+    // Handle file input for image
+    if (type === "file") {
+      setForm((prev) => ({ ...prev, [name]: files[0] || null }));
+      return;
+    }
     
     // If changing main_category, reset subcategory
     if (name === "main_category") {
@@ -122,16 +129,23 @@ export default function ProductsCreatePage() {
     setSaving(true);
     setError("");
     try {
-      const payload = {
-        ...form,
-        price: parseFloat(form.price),
-        stock_quantity: parseInt(form.stock_quantity, 10),
-        low_stock_threshold: parseInt(form.low_stock_threshold, 10),
-        category: form.category || null,
-        supplier: form.supplier || null,
-        warehouse: form.warehouse || null,
-      };
-      await createProduct(payload);
+      // Create FormData for multipart/form-data (required for file upload)
+      const formData = new FormData();
+      formData.append('sku', form.sku);
+      formData.append('name', form.name);
+      formData.append('description', form.description);
+      if (form.image) {
+        formData.append('image', form.image);
+      }
+      formData.append('category', form.category || '');
+      formData.append('supplier', form.supplier || '');
+      formData.append('warehouse', form.warehouse || '');
+      formData.append('price', parseFloat(form.price));
+      formData.append('stock_quantity', parseInt(form.stock_quantity, 10));
+      formData.append('low_stock_threshold', parseInt(form.low_stock_threshold, 10));
+      formData.append('is_active', form.is_active);
+      
+      await createProduct(formData);
       navigate("/products");
     } catch (err) {
       const data = err.response?.data;
@@ -257,6 +271,37 @@ export default function ProductsCreatePage() {
                   />
                   <span className="wizard-toggle-pill" />
                 </label>
+              </div>
+            </label>
+            <label className="wizard-field">
+              Product Image
+              <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                <input 
+                  type="file" 
+                  name="image" 
+                  onChange={handleChange} 
+                  accept="image/*"
+                  style={{ flex: 1 }}
+                />
+                {form.image && (
+                  <div style={{ 
+                    width: "80px", 
+                    height: "80px", 
+                    borderRadius: "4px", 
+                    overflow: "hidden", 
+                    border: "1px solid #ddd",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f3f4f6"
+                  }}>
+                    <img 
+                      src={URL.createObjectURL(form.image)} 
+                      alt="Preview"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  </div>
+                )}
               </div>
             </label>
             <label className="wizard-field">

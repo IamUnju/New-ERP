@@ -28,10 +28,15 @@ export default function CategoryManagementPage() {
         api.get("/api/v1/main-categories/"),
         api.get("/api/v1/subcategories/")
       ]);
-      setMainCategories(mainRes.data);
-      setSubcategories(subRes.data);
+      // Handle both paginated and direct array responses
+      const mainData = Array.isArray(mainRes.data) ? mainRes.data : (mainRes.data.results || []);
+      const subData = Array.isArray(subRes.data) ? subRes.data : (subRes.data.results || []);
+      setMainCategories(mainData);
+      setSubcategories(subData);
     } catch (error) {
       console.error("Error loading categories:", error);
+      setMainCategories([]);
+      setSubcategories([]);
     } finally {
       setLoading(false);
     }
@@ -423,6 +428,39 @@ export default function CategoryManagementPage() {
                 </select>
               </div>
             )}
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "24px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#f0f0f0",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: "500",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCategory}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#18b34a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: "500",
+                }}
+              >
+                {modalMode === "add" ? "Create" : "Update"}
+              </button>
+            </div>
           </div>
         </Modal>
       )}

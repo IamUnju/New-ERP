@@ -42,6 +42,7 @@ class Product(TimeStampedModel):
     sku = models.CharField(max_length=50, unique=True, blank=True)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='products/', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name="products")
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, related_name="products")
     warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, related_name="products")
