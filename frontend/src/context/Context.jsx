@@ -118,6 +118,29 @@ export const UserContextProvider = ({ children }) => {
         setIsAuthenticated(false);
     };
 
+    const normalizePermissionPath = (path) => {
+        if (!path) return "";
+        const normalized = path.startsWith("/") ? path : `/${path}`;
+        return normalized.endsWith("/") && normalized.length > 1
+            ? normalized.slice(0, -1)
+            : normalized;
+    };
+
+    const hasPermission = (path, action = "view") => {
+        const normalizedPath = normalizePermissionPath(path);
+        const permissionMap = permissions || {};
+        let allowed = permissionMap[normalizedPath];
+
+        if (!allowed) {
+            const matchedKey = Object.keys(permissionMap)
+                .filter((key) => key !== "/" && normalizedPath.startsWith(key))
+                .sort((a, b) => b.length - a.length)[0];
+            allowed = matchedKey ? permissionMap[matchedKey] : [];
+        }
+
+        return Array.isArray(allowed) && allowed.includes(action);
+    };
+
     useEffect(() => {
         checkAuth();
     }, []);
@@ -130,6 +153,7 @@ export const UserContextProvider = ({ children }) => {
                 permissions,
                 isAuthenticated,
                 loading,
+                hasPermission,
                 Userlogin,
                 logout,
             }}

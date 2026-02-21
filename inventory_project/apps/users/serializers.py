@@ -5,7 +5,15 @@ from apps.users.models import Role, ScreenPermission, RolePermission, User
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ["id", "name", "description"]
+        fields = [
+            "id",
+            "name",
+            "description",
+            "effective_from",
+            "effective_to",
+            "remarks",
+            "is_active",
+        ]
 
 
 class ScreenPermissionSerializer(serializers.ModelSerializer):

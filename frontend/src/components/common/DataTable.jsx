@@ -7,8 +7,17 @@
  *   onEdit   – (row) => void
  *   onDelete – (row) => void
  *   showActions – boolean (default true)
+ *   renderActions – (row) => ReactNode
  */
-export default function DataTable({ columns, rows, loading, onEdit, onDelete, showActions = true }) {
+export default function DataTable({
+  columns,
+  rows,
+  loading,
+  onEdit,
+  onDelete,
+  showActions = true,
+  renderActions,
+}) {
   if (loading) return <div className="table-loading">Loading…</div>;
 
   return (
@@ -37,12 +46,18 @@ export default function DataTable({ columns, rows, loading, onEdit, onDelete, sh
                 ))}
                 {showActions && (
                   <td className="table-actions">
-                    <button className="btn-icon edit" onClick={() => onEdit?.(row)} title="Edit">
-                      ✏️
-                    </button>
-                    <button className="btn-icon delete" onClick={() => onDelete?.(row)} title="Delete">
-                      🗑️
-                    </button>
+                    {renderActions ? (
+                      renderActions(row)
+                    ) : (
+                      <>
+                        <button className="btn-icon edit" onClick={() => onEdit?.(row)} title="Edit">
+                          ✏️
+                        </button>
+                        <button className="btn-icon delete" onClick={() => onDelete?.(row)} title="Delete">
+                          🗑️
+                        </button>
+                      </>
+                    )}
                   </td>
                 )}
               </tr>

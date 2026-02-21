@@ -3,8 +3,8 @@ import { useContext } from "react";
 import { replace, useNavigate } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 
-function RoleBasedProtectedRoute ({children,allowedrole}) {
-    const {roles,isAuthenticated,loading} = useContext(UserContext)
+function RoleBasedProtectedRoute ({children, allowedrole, screenPath}) {
+    const { roles, isAuthenticated, loading, hasPermission } = useContext(UserContext)
     if(loading){
         return<div>loadin..</div>
     }
@@ -21,6 +21,10 @@ function RoleBasedProtectedRoute ({children,allowedrole}) {
         console.log("hamna roles")
         // return <Navigate to="/login"/>
          return <Navigate to="/unauthorized" replace/>
+    }
+
+    if (screenPath && !hasPermission(screenPath, "view")) {
+        return <Navigate to="/unauthorized" replace/>
     }
 
  return children

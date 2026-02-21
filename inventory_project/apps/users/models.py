@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
+from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
 from apps.core.models import TimeStampedModel
 
@@ -23,6 +24,10 @@ class UserManager(BaseUserManager):
 class Role(TimeStampedModel):
     name = models.CharField(max_length=50, unique=True)
     description = models.CharField(max_length=255, blank=True)
+    effective_from = models.DateTimeField(default=timezone.now)
+    effective_to = models.DateTimeField(null=True, blank=True)
+    remarks = models.CharField(max_length=255, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

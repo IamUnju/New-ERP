@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createUser,
   deleteUser,
-  getRoles,
   getUsers,
   updateUser,
 } from "../../api/users.js";
@@ -17,7 +16,6 @@ const EMPTY = {
   first_name: "",
   last_name: "",
   password: "",
-  role_ids: [],
   is_active: true,
 };
 
@@ -27,20 +25,6 @@ const COLUMNS = [
   { key: "email", label: "Email" },
   { key: "first_name", label: "First Name" },
   { key: "last_name", label: "Last Name" },
-  {
-    key: "roles",
-    label: "Roles",
-    render: (r) =>
-      r.roles?.length ? (
-        <div className="badge-list">
-          {r.roles.map((role) => (
-            <Badge key={role} label={role} variant="info" />
-          ))}
-        </div>
-      ) : (
-        "—"
-      ),
-  },
   {
     key: "is_active",
     label: "Status",
@@ -58,7 +42,6 @@ export default function UsersPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [roles, setRoles] = useState([]);
 
   /* ── Fetch users ────────────────────────────────────────────────────────── */
   const fetchUsers = useCallback(async () => {
@@ -77,11 +60,6 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  /* ── Load roles once ────────────────────────────────────────────────────── */
-  useEffect(() => {
-    getRoles().then((res) => setRoles(res.data.results ?? res.data));
-  }, []);
-
   /* ── Open create modal ──────────────────────────────────────────────────── */
   const openCreate = () => {
     setEditing(null);
@@ -93,17 +71,12 @@ export default function UsersPage() {
   /* ── Open edit modal ────────────────────────────────────────────────────── */
   const openEdit = (user) => {
     setEditing(user);
-    /* Map role names → ids for the checkboxes */
-    const selectedIds = roles
-      .filter((r) => user.roles?.includes(r.name))
-      .map((r) => r.id);
     setForm({
       email: user.email,
       username: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
       password: "",        /* leave blank to keep existing password */
-      role_ids: selectedIds,
       is_active: user.is_active,
     });
     setError("");
@@ -114,17 +87,6 @@ export default function UsersPage() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
-  };
-
-  /* ── Handle role checkbox toggle ────────────────────────────────────────── */
-  const toggleRole = (id) => {
-    setForm((prev) => {
-      const already = prev.role_ids.includes(id);
-      return {
-        ...prev,
-        role_ids: already ? prev.role_ids.filter((x) => x !== id) : [...prev.role_ids, id],
-      };
-    });
   };
 
   /* ── Submit create / update ─────────────────────────────────────────────── */
@@ -176,7 +138,7 @@ export default function UsersPage() {
       <div className="page-toolbar">
         <input
           className="search-input"
-          placeholder="Search by username or email…"
+          placeholder="Search by username or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -191,6 +153,16 @@ export default function UsersPage() {
         loading={loading}
         onEdit={openEdit}
         onDelete={(row) => setConfirmDelete(row)}
+        renderActions={(row) => (
+          <>
+            <button className="btn-icon edit" onClick={() => openEdit(row)} title="Edit">
+              ✏️
+            </button>
+            <button className="btn-icon delete" onClick={() => setConfirmDelete(row)} title="Delete">
+              🗑️
+            </button>
+          </>
+        )}
       />
 
       {/* ── Create / Edit Modal ── */}
@@ -245,25 +217,6 @@ export default function UsersPage() {
               />
             </label>
 
-            {/* Roles checkboxes */}
-            {roles.length > 0 && (
-              <div className="field">
-                <span className="field-label">Roles</span>
-                <div className="checkbox-group">
-                  {roles.map((role) => (
-                    <label key={role.id} className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={form.role_ids.includes(role.id)}
-                        onChange={() => toggleRole(role.id)}
-                      />
-                      {role.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <label className="field checkbox-field">
               <input
                 name="is_active"
@@ -281,7 +234,7 @@ export default function UsersPage() {
                 Cancel
               </button>
               <button type="submit" className="btn primary" disabled={saving}>
-                {saving ? "Saving…" : editing ? "Update" : "Create"}
+                {saving ? "Saving..." : editing ? "Update" : "Create"}
               </button>
             </div>
           </form>

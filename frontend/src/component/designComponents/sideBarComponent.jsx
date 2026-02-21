@@ -9,7 +9,7 @@ import {
   Calendar, AlertTriangle, RefreshCw, CheckCircle2, RotateCcw,
   FileText, FilePlus, Send, Undo2, FileCheck, Receipt, ClipboardList,
   DollarSign, TrendingDown, CreditCard, BadgeDollarSign, Repeat,
-  Link2, UserCheck, UserPlus, MapPin, FileInput, Plus, Gift,
+  Link2, UserCheck, UserPlus, MapPin, FileInput, Plus, Gift, Lock,
 } from "lucide-react";
 import { useContext } from "react";
 import { UserContext } from "../../context/Context";
@@ -177,6 +177,19 @@ const dropdownMenus = {
       ],
     ],
   },
+  system: {
+    tabs: ['System', 'Settings'],
+    activeTab: 'System',
+    columns: [
+      [
+        { icon: <Users size={18} />, label: 'Users', path: '/users' },
+        { icon: <Lock size={18} />, label: 'Roles & Permissions', path: '/system/roles-permissions' },
+      ],
+      [
+        { icon: <Settings size={18} />, label: 'Masters', path: '/system/masters' },
+      ],
+    ],
+  },
 };
 
 const navItems = [
@@ -194,7 +207,7 @@ const navItems = [
 ];
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
-  const { logout } = useContext(UserContext);
+  const { logout, hasPermission } = useContext(UserContext);
   const navigate = useNavigate();
   const [hoveredItem, setHoveredItem] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
@@ -206,6 +219,19 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
+  };
+
+  const canViewPath = (path) => {
+    if (!hasPermission) return true;
+    return hasPermission(path, "view");
+  };
+
+  const hasDropdownItems = (menuKey) => {
+    const dropdownConfig = dropdownMenus[menuKey];
+    if (!dropdownConfig) return false;
+    return dropdownConfig.columns.some((column) =>
+      column.some((item) => canViewPath(item.path))
+    );
   };
 
   /**
@@ -307,9 +333,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     const columnsPerTab = dropdownConfig.columns.length / dropdownConfig.tabs.length;
     const startCol = currentActiveTabIndex * columnsPerTab;
     const visibleColumns = dropdownConfig.columns.slice(startCol, startCol + columnsPerTab);
+    const filteredColumns = visibleColumns
+      .map((column) => column.filter((item) => canViewPath(item.path)))
+      .filter((column) => column.length > 0);
     
     // Flatten all items from visible columns into a single array
-    const allItems = visibleColumns.reduce((acc, column) => [...acc, ...column], []);
+    const allItems = filteredColumns.reduce((acc, column) => [...acc, ...column], []);
+    if (allItems.length === 0) return null;
     
     // Organize items into 3 rows
     const itemsPerRow = Math.ceil(allItems.length / 3);
@@ -397,9 +427,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : "closed"}`}>
       <nav className="sidebar-nav" style={{ flex: 1, overflowY: isOpen ? "auto" : "visible", overflowX: "visible", position: 'relative' }}>
         <ul className="menu-items" style={{ paddingTop: isOpen ? 8 : 4, overflow: 'visible' }}>
-          {navItems.map((item) => {
+          {navItems.filter((item) => canViewPath(item.to)).map((item) => {
             const menuKey = item.label.toLowerCase();
-            const hasDropdown = !!dropdownMenus[menuKey];
+            const hasDropdown = hasDropdownItems(menuKey);
             
             return (
               <React.Fragment key={item.to}>
@@ -439,7 +469,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     {isOpen && <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>}
                   </NavLink>
                 </li>
-                {item.label === "System" && isOpen && (
+                {item.label === "System" && isOpen && canViewPath("/system/masters") && (
                   <li style={{ padding: 0 }}>
                     <NavLink
                       to="/system/masters"

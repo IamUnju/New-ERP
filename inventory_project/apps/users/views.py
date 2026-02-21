@@ -75,3 +75,32 @@ class RolePermissionViewSet(AuditLogMixin, viewsets.ModelViewSet):
         role = Role.objects.get(id=role_id)
         assign_role_permissions(role, permissions)
         return Response({"status": "updated"})
+
+    @action(detail=False, methods=["post"], permission_classes=[ScreenPermissionRequired])
+    def grant_all_to_admin(self, request):
+        """Grant all permissions to Admin role"""
+        try:
+            admin_role = Role.objects.get(name="Admin")
+            all_actions = ["view", "create", "update", "delete"]
+            screens = ScreenPermission.objects.all()
+            
+            # Delete existing permissions for admin
+            RolePermission.objects.filter(role=admin_role).delete()
+            
+            # Grant all permissions
+            for screen in screens:
+                RolePermission.objects.create(
+                    role=admin_role,
+                    screen=screen,
+                    actions=all_actions
+                )
+            
+            return Response({
+                "status": "success",
+                "message": f"Granted all permissions to Admin role ({len(screens)} screens)"
+            })
+        except Role.DoesNotExist:
+            return Response(
+                {"status": "error", "message": "Admin role not found"},
+                status=404
+            )
