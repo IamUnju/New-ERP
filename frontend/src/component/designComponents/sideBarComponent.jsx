@@ -251,7 +251,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     const rect = event.currentTarget.getBoundingClientRect();
     setDropdownPosition({
       top: rect.top,
-      left: rect.right - 4  // Slight overlap to prevent gap issues
+      left: rect.right + 8  // Add gap so panel appears next to collapsed sidebar
     });
     
     setHoveredItem(menuKey);
