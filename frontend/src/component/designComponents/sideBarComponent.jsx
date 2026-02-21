@@ -203,13 +203,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   /**
    * Handle mouse leave from menu item
-   * Adds delay before closing dropdown to allow moving to panel
+   * Only close if leaving both the item AND the dropdown
    */
   const handleMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setHoveredItem(null);
-    }, 1500); // Long delay to ensure user can reach dropdown
-    setHoverTimeout(timeout);
+    // Don't immediately close - let the dropdown handle its own mouse leave
+    // This will be managed by the dropdown panel's onMouseLeave
   };
 
   /**
@@ -223,11 +221,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   };
 
   /**
-   * Force keep dropdown open (for when actively using it)
+   * Handle mouse leave from dropdown panel
+   * Closes dropdown when cursor leaves the panel
    */
-  const keepDropdownOpen = (menuKey) => {
-    cancelCloseTimeout();
-    setHoveredItem(menuKey);
+  const handleDropdownMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      setHoveredItem(null);
+    }, 200); // Short delay to prevent accidental flickering
+    setHoverTimeout(timeout);
   };
 
   /**
@@ -243,8 +244,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     return (
       <div 
         className="sidebar-dropdown-panel" 
-        onMouseEnter={() => keepDropdownOpen(menuKey)}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={() => cancelCloseTimeout()}
+        onMouseLeave={handleDropdownMouseLeave}
         onClick={(e) => e.stopPropagation()}
         style={{
           position: 'fixed',
